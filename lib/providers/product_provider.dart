@@ -26,7 +26,7 @@ class ProductProvider with ChangeNotifier {
           stockQuantity: 100,
           minOrderQuantity: 5,
           supplierId: 1,
-          images: [],
+          imageUrl: '',
         ),
         Product(
           id: 2,
@@ -37,7 +37,7 @@ class ProductProvider with ChangeNotifier {
           stockQuantity: 200,
           minOrderQuantity: 10,
           supplierId: 1,
-          images: [],
+          imageUrl: '',
         ),
         Product(
           id: 3,
@@ -48,7 +48,7 @@ class ProductProvider with ChangeNotifier {
           stockQuantity: 150,
           minOrderQuantity: 5,
           supplierId: 2,
-          images: [],
+          imageUrl: '',
         ),
       ];
 
