@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers.dart';
-import './order_history_screen.dart'; // Добавьте этот импорт
+import './order_history_screen.dart';
+import './supplier_links_screen.dart';
+import './complaints_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -145,6 +147,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Menu Items - с иконками как в Figma
                   _buildMenuTile('Edit Profile', Icons.edit),
                   _buildDividerWithPadding(),
+                  _buildMenuTile('Supplier Links', Icons.business_center,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SupplierLinksScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDividerWithPadding(),
                   _buildMenuTile('Order History', Icons.shopping_bag, 
                     onTap: () {
                       Navigator.push(
@@ -155,6 +168,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     },
                     badge: orderProvider.orders.isNotEmpty ? orderProvider.orders.length : null,
+                  ),
+                  _buildDividerWithPadding(),
+                  _buildMenuTile('Complaints', Icons.warning_outlined,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ComplaintsScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildDividerWithPadding(),
                   _buildMenuTile('Settings', Icons.settings),
@@ -295,8 +319,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[500]),
       onTap: () {
-        // TODO: Добавить логику выхода
+        _showLogoutConfirmation();
       },
+    );
+  }
+
+  void _showLogoutConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout?'),
+        content: const Text('Are you sure you want to logout from your account?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final userProvider = Provider.of<UserProvider>(context, listen: false);
+              await userProvider.logout();
+            },
+            child: Text(
+              'Logout',
+              style: TextStyle(color: Colors.red[600]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

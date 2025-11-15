@@ -15,8 +15,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ProductProvider>(context, listen: false).loadMockProducts();
-      Provider.of<UserProvider>(context, listen: false).loginMockUser();
+  Provider.of<ProductProvider>(context, listen: false).loadMockProducts();
+  Provider.of<UserProvider>(context, listen: false).loginMockUser();
+  // Use mock supplier links in demo mode to avoid backend calls when backend is not running.
+  Provider.of<SupplierLinkProvider>(context, listen: false).loadMockLinks();
     });
   }
 
@@ -24,6 +26,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final productProvider = Provider.of<ProductProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
+    final supplierLinkProvider = Provider.of<SupplierLinkProvider>(context);
+
+    // Фильтруем товары только от подключенных поставщиков
+    final connectedSupplierIds = supplierLinkProvider.connectedSuppliers
+        .map((link) => link.supplierId)
+        .toList();
+    
+    final filteredProducts = productProvider.featuredProducts
+        .where((product) => connectedSupplierIds.contains(product.supplierId))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -117,14 +129,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16.0),
                   
-                  if (productProvider.featuredProducts.isNotEmpty)
+                  if (connectedSupplierIds.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(Icons.link_off, size: 48, color: Colors.grey[300]),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No connected suppliers yet',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Go to Profile → Supplier Links to connect',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (filteredProducts.isNotEmpty)
                     Column(
-                      children: productProvider.featuredProducts.map((product) {
+                      children: filteredProducts.map((product) {
                         return _buildProductCard(product, context);
                       }).toList(),
                     )
                   else
-                    const Text('No products available'),
+                    const Text('No products available from connected suppliers'),
                   
                   const SizedBox(height: 24.0),
                   

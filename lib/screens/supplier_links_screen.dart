@@ -1,0 +1,323 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/providers.dart';
+import '../utils/utils.dart';
+
+class SupplierLinksScreen extends StatefulWidget {
+  const SupplierLinksScreen({super.key});
+
+  @override
+  State<SupplierLinksScreen> createState() => _SupplierLinksScreenState();
+}
+
+class _SupplierLinksScreenState extends State<SupplierLinksScreen> {
+  final _messageController = TextEditingController();
+  final _searchController = TextEditingController();
+  bool _showPendingOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Загружаем связи при открытии экрана
+      Provider.of<SupplierLinkProvider>(context, listen: false).loadMockLinks();
+    });
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Supplier Links'),
+          backgroundColor: const Color(0xFF6B8E23),
+          foregroundColor: Colors.white,
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Connected'),
+              Tab(text: 'Pending'),
+            ],
+            indicatorColor: Colors.white,
+          ),
+        ),
+        body: Consumer<SupplierLinkProvider>(
+          builder: (context, linkProvider, _) {
+            return TabBarView(
+              children: [
+                _buildConnectedTab(linkProvider),
+                _buildPendingTab(linkProvider),
+              ],
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showRequestDialog,
+          backgroundColor: const Color(0xFF6B8E23),
+          child: const Icon(Icons.add),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectedTab(SupplierLinkProvider linkProvider) {
+    if (linkProvider.connectedSuppliers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.business_center, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            const Text(
+              'No connected suppliers',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Request access to start ordering',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: linkProvider.connectedSuppliers.length,
+      itemBuilder: (context, index) {
+        final link = linkProvider.connectedSuppliers[index];
+        return _buildSupplierCard(link, isConnected: true);
+      },
+    );
+  }
+
+  Widget _buildPendingTab(SupplierLinkProvider linkProvider) {
+    if (linkProvider.pendingRequests.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.schedule, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            const Text(
+              'No pending requests',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: linkProvider.pendingRequests.length,
+      itemBuilder: (context, index) {
+        final link = linkProvider.pendingRequests[index];
+        return _buildSupplierCard(link, isConnected: false);
+      },
+    );
+  }
+
+  Widget _buildSupplierCard(SupplierLink link, {required bool isConnected}) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6B8E23).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.store,
+                    color: Color(0xFF6B8E23),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        link.supplierName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'ID: ${link.supplierId}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  isConnected ? Icons.check_circle : Icons.schedule,
+                  color: isConnected ? Colors.green : Colors.orange,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isConnected ? 'Connected' : 'Pending approval',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isConnected ? Colors.green : Colors.orange,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  _formatDate(link.requestedAt),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            if (isConnected) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6B8E23),
+                  ),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('View supplier catalog'),
+                      ),
+                    );
+                  },
+                  child: const Text('View Products'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRequestDialog() {
+    final supplierIdController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Request Supplier Link'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter the supplier ID to request access',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: supplierIdController,
+                decoration: InputDecoration(
+                  labelText: 'Supplier ID',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  prefixIcon: const Icon(Icons.numbers),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _messageController,
+                decoration: InputDecoration(
+                  labelText: 'Message (optional)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  prefixIcon: const Icon(Icons.message),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6B8E23),
+            ),
+            onPressed: () {
+              if (supplierIdController.text.isEmpty) {
+                ErrorHandler.showInfoSnackBar(
+                  context,
+                  'Please enter a supplier ID',
+                );
+                return;
+              }
+
+              final linkProvider = Provider.of<SupplierLinkProvider>(
+                context,
+                listen: false,
+              );
+
+              try {
+                linkProvider.requestSupplierLink(
+                  supplierId: int.parse(supplierIdController.text),
+                  supplierName: 'Supplier ${supplierIdController.text}',
+                  message: _messageController.text.trim(),
+                );
+
+                _messageController.clear();
+                supplierIdController.clear();
+                Navigator.pop(context);
+
+                ErrorHandler.showSuccessSnackBar(
+                  context,
+                  'Request sent to supplier!',
+                );
+              } catch (e) {
+                ErrorHandler.showErrorSnackBar(context, e);
+              }
+            },
+            child: const Text('Send Request'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+}
