@@ -91,6 +91,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ComplaintProvider()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'CaterChain SCP',
         theme: ThemeData(
           primaryColor: const Color(0xFF6B8E23),

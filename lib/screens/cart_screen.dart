@@ -168,7 +168,7 @@ class _CartScreenState extends State<CartScreen> {
                 'Place Order',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -249,7 +249,7 @@ class _EmptyCartState extends StatelessWidget {
             // Анимированная иконка
             Icon(
               Icons.shopping_cart_outlined,
-              size: 120,
+              size: 90,
               color: Colors.grey[300],
             ),
             const SizedBox(height: 24),
@@ -258,7 +258,7 @@ class _EmptyCartState extends StatelessWidget {
             const Text(
               'Your cart is empty',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 21,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey,
               ),
@@ -271,7 +271,7 @@ class _EmptyCartState extends StatelessWidget {
               'Looks like you haven\'t added any products to your cart yet.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 color: Colors.grey,
                 height: 1.5,
               ),
@@ -300,7 +300,7 @@ class _EmptyCartState extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     'Start Shopping',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -323,11 +323,11 @@ class _CartWithItems extends StatelessWidget {
       children: [
         // Header with item count
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           color: Colors.grey[50],
           child: Row(
             children: [
-              const Icon(Icons.shopping_cart, size: 20, color: Colors.grey),
+              const Icon(Icons.shopping_cart, size: 24, color: Colors.grey),
               const SizedBox(width: 8),
               Text(
                 '${cartProvider.itemCount} ${cartProvider.itemCount == 1 ? 'item' : 'items'} in cart',
@@ -437,9 +437,9 @@ class _CartItemCard extends StatelessWidget {
                   Text(
                     '${item.product.price.toStringAsFixed(0)} ₸ / ${item.product.unit}',
                     style: const TextStyle(
-                      color: Colors.green,
+                      color: Color(0xFF6B8E23),
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   

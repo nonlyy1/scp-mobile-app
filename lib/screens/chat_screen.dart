@@ -20,6 +20,94 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void _openNewChatDialog(BuildContext context) {
+    final supplierLinkProvider = Provider.of<SupplierLinkProvider>(context, listen: false);
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+    final suppliers = supplierLinkProvider.connectedSuppliers;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFFFFFF),
+          title: const Text(
+            'Start New Chat',
+            style: TextStyle(
+              color: Color(0xFF3F6533),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          content: suppliers.isEmpty
+              ? const Text(
+            'No approved suppliers yet.',
+            style: TextStyle(color: Color(0xFF3F6533)),
+          )
+              : SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: suppliers.length,
+              itemBuilder: (context, index) {
+                final supplier = suppliers[index];
+
+                return ListTile(
+                  leading: const Icon(Icons.store, color: Color(0xFF6B8E23)),
+                  title: Text(
+                    supplier.supplierName,
+                    style: const TextStyle(
+                      color: Color(0xFF3F6533),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () async {
+                    // Start new chat
+                    final newChatId = await chatProvider.startChatWithSupplier(
+                      supplier.supplierId,
+                      supplier.supplierName,
+                    );
+
+                    Navigator.pop(context); // close dialog
+
+                    // Open new chat directly
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => _ChatDetailScreen(
+                          chat: Chat(
+                            id: newChatId,
+                            supplierId: supplier.supplierId,
+                            supplierName: supplier.supplierName,
+                            lastMessage: '',
+                            lastMessageAt: DateTime.now(),
+                            unreadCount: 0,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Close',
+                style: TextStyle(color: Color(0xFF3F6533)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatProvider>(
@@ -29,7 +117,10 @@ class _ChatScreenState extends State<ChatScreen> {
           if (chatProvider.chats.isEmpty) {
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Messages'),
+                title: const Text(
+                  'Messages',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                ),
                 backgroundColor: const Color(0xFF6B8E23),
                 foregroundColor: Colors.white,
               ),
@@ -51,6 +142,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
+
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: const Color(0xFF6B8E23),
+                child: const Icon(Icons.add_comment_rounded, color: Colors.white),
+                onPressed: () {
+                  _openNewChatDialog(context);
+                },
+              ),
             );
           }
 
@@ -61,7 +160,10 @@ class _ChatScreenState extends State<ChatScreen> {
           // Показываем список чатов
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Messages'),
+              title: const Text(
+                'Messages',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              ),
               backgroundColor: const Color(0xFF6B8E23),
               foregroundColor: Colors.white,
             ),
@@ -95,12 +197,22 @@ class _ChatScreenState extends State<ChatScreen> {
                 );
               },
             ),
+            floatingActionButton: FloatingActionButton(
+              backgroundColor: const Color(0xFF6B8E23),
+              child: const Icon(Icons.add_comment_rounded, color: Colors.white),
+              onPressed: () {
+                _openNewChatDialog(context);
+              },
+            ),
           );
         } catch (e, st) {
           // Если ошибка всё же произошла — показываем безопасный экран с кнопкой возврата
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Messages'),
+              title: const Text(
+                'Messages',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              ),
               backgroundColor: const Color(0xFF6B8E23),
               foregroundColor: Colors.white,
             ),
@@ -119,6 +231,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ],
               ),
+            ),
+
+            floatingActionButton: FloatingActionButton(
+              backgroundColor: const Color(0xFF6B8E23),
+              child: const Icon(Icons.add_comment_rounded, color: Colors.white),
+              onPressed: () {
+                _openNewChatDialog(context);
+              },
             ),
           );
         }
@@ -448,7 +568,7 @@ class _ChatDetailScreenState extends State<_ChatDetailScreen> {
                       onPressed: () => _sendMessage(chatProvider),
                       mini: true,
                       backgroundColor: const Color(0xFF6B8E23),
-                      child: const Icon(Icons.send),
+                      child: const Icon(Icons.send_rounded, color: Colors.white),
                     ),
                   ],
                 ),

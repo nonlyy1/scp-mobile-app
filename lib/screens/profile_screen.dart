@@ -43,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
+        titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),
         backgroundColor: const Color(0xFF6B8E23),
         foregroundColor: Colors.white,
       ),

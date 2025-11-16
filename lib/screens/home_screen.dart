@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('CaterChain Marketplace'),
+        titleTextStyle: TextStyle( fontSize: 20, fontWeight: FontWeight.bold,),
         actions: [
           if (userProvider.isLoggedIn)
             Padding(
@@ -187,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _buildCategoryBox('Wholesale Goods', Icons.inventory_2_outlined),
                       _buildCategoryBox('Raw Materials', Icons.construction_outlined),
-                      _buildCategoryBox('Beverages', Icons.local_drink_outlined),
+                      _buildCategoryBox('Beverages', Icons.emoji_food_beverage_outlined),
                       _buildCategoryBox('Fresh Produce', Icons.grass_outlined),
                     ],
                   ),
@@ -251,11 +252,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 1),
+                const SizedBox(height: 3),
                 Text(
                   category,
                   style: TextStyle(
-                    fontSize: 8,
+                    fontSize: 10,
                     color: Colors.grey[600],
                     height: 1.0,
                   ),
@@ -334,12 +335,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 5),
             if (product.stockQuantity > 0)
-              Text(
-                'In stock: ${product.stockQuantity}',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.green,
+              RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'In stock: ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF787A77), // normal text color
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${product.stockQuantity}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6B8E23),
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -362,10 +379,13 @@ class _HomeScreenState extends State<HomeScreen> {
               
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Added ${product.name} to cart'),
+                  content: Text(
+                    'Added ${product.name} to cart',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   backgroundColor: const Color(0xFF6B8E23),
                   action: SnackBarAction(
-                    label: 'View Cart',
+                    label: 'VIEW CART',
                     textColor: Colors.white,
                     onPressed: () {
                       navigationProvider.navigateToCart();

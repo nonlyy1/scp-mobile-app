@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../utils/utils.dart';
+import 'package:email_validator/email_validator.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,6 +12,10 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+
+  String selectedRole = "Customer";
+
+  final  _inviteCodeController = TextEditingController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -45,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
+
     try {
       final success = await userProvider.registerConsumer(
         name: _nameController.text.trim(),
@@ -82,12 +87,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Create Account'),
+        titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),
         backgroundColor: const Color(0xFF6B8E23),
         foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -107,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Register as a consumer to start ordering',
+                  'Register as a consumer or sales representative',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
@@ -172,6 +175,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Company name is required';
                           }
+                          if (value.length < 3) {
+                            return 'Company name must be at least 3 characters';
+                          }
                           return null;
                         },
                       ),
@@ -200,7 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Email is required';
                           }
-                          if (!value.contains('@')) {
+                          if (!EmailValidator.validate(value)) {
                             return 'Please enter a valid email';
                           }
                           return null;
@@ -214,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
-                          hintText: '+7 (777) 123-45-67',
+                          hintText: '7 (777) 123-45-67',
                           prefixIcon: const Icon(Icons.phone, color: Color(0xFF6B8E23)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -228,15 +234,99 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Phone number is required';
                           }
-                          if (value.length < 10) {
-                            return 'Please enter a valid phone number';
+
+                          final cleaned = value.replaceAll(' ', '');
+                          if (!RegExp(r'^\d+$').hasMatch(cleaned)) {
+                            return 'Phone number must contain only digits';
+                          }
+
+                          if (cleaned.length != 11) {
+                            return 'Please enter a valid 11 digits phone number';
                           }
                           return null;
                         },
                       ),
+
+                      const SizedBox(height: 16),
+
+                      // Select role
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedRole,
+                        decoration: InputDecoration(
+                          labelText: 'Select Your Role',
+                          prefixIcon: const Icon(Icons.person_rounded, color: Color(0xFF6B8E23)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF6B8E23),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: "Customer",
+                            child: Text("Customer"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Sales Rep",
+                            child: Text("Sales Representative"),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedRole = value!;
+                          });
+                        },
+                      ),
+
+                      if (selectedRole == 'Sales Rep')
+                        const SizedBox(height: 16,),
+
+                      // Confirm Invite Code
+                      if (selectedRole == 'Sales Rep')
+                        TextFormField(
+                          controller: _inviteCodeController,
+                          decoration: InputDecoration(
+                            labelText: 'Invite Code (Sales Rep only)',
+                            hintText: "Enter your invite code",
+                            prefixIcon: const Icon(Icons.vpn_key, color: Color(0xFF6B8E23)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF6B8E23),
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (selectedRole == "Sales Rep") {
+                              if (value == null || value.isEmpty) {
+                                return "Invite code is required for Sales Rep";
+                              }
+                              if (value.contains(" ")) {
+                                return "Invite code cannot contain spaces";
+                              }
+                              if (!RegExp(r'^[A-Za-z0-9]+$').hasMatch(value)) {
+                                return "Only letter & number characters allowed";
+                              }
+                              if (value.length < 6) {
+                                return "Invite code must be at least 6 characters";
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+
                       const SizedBox(height: 16),
 
                       // Password
@@ -273,12 +363,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Password is required';
                           }
+                          if (value.contains(' ')) {
+                            return 'Password cannot contain spaces';
+                          }
                           if (value.length < 6) {
                             return 'Password must be at least 6 characters';
                           }
                           return null;
                         },
                       ),
+
                       const SizedBox(height: 16),
 
                       // Confirm Password
@@ -315,13 +409,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Please confirm password';
                           }
-                          if (value != _passwordController.text) {
+                          if (value != _passwordController.text.trim()) {
                             return 'Passwords do not match';
+                          }
+                          if (value.contains(' ')) {
+                            return 'Password cannot contain spaces';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 20),
+
+                      const SizedBox(height: 16),
 
                       // Terms Checkbox
                       Row(
@@ -423,6 +521,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+
     );
   }
 }

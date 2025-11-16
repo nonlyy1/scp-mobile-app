@@ -38,14 +38,22 @@ class _SupplierLinksScreenState extends State<SupplierLinksScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Supplier Links'),
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           backgroundColor: const Color(0xFF6B8E23),
           foregroundColor: Colors.white,
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Connected'),
+          bottom: TabBar(
+            tabs: const [
+              Tab(
+                text: 'Connected',
+              ),
+
               Tab(text: 'Pending'),
             ],
+            labelColor: Colors.white,
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            unselectedLabelColor: Colors.white.withOpacity(0.5),
             indicatorColor: Colors.white,
+            indicatorWeight: 3.0,
           ),
         ),
         body: Consumer<SupplierLinkProvider>(
@@ -61,7 +69,7 @@ class _SupplierLinksScreenState extends State<SupplierLinksScreen> {
         floatingActionButton: FloatingActionButton(
           onPressed: _showRequestDialog,
           backgroundColor: const Color(0xFF6B8E23),
-          child: const Icon(Icons.add),
+          child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
     );
@@ -179,7 +187,7 @@ class _SupplierLinksScreenState extends State<SupplierLinksScreen> {
               children: [
                 Icon(
                   isConnected ? Icons.check_circle : Icons.schedule,
-                  color: isConnected ? Colors.green : Colors.orange,
+                  color: isConnected ? Color(0xFF6B8E23) : Colors.orange,
                   size: 16,
                 ),
                 const SizedBox(width: 6),
@@ -187,7 +195,7 @@ class _SupplierLinksScreenState extends State<SupplierLinksScreen> {
                   isConnected ? 'Connected' : 'Pending approval',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isConnected ? Colors.green : Colors.orange,
+                    color: isConnected ? Color(0xFF6B8E23) : Colors.orange,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -216,7 +224,10 @@ class _SupplierLinksScreenState extends State<SupplierLinksScreen> {
                       ),
                     );
                   },
-                  child: const Text('View Products'),
+                  child: const Text(
+                    'View Products',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],

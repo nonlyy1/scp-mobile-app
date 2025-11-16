@@ -287,6 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onTap: () {
                               Navigator.of(context).pushNamed('/register');
                             },
+
                             child: const Text(
                               'Sign Up',
                               style: TextStyle(
